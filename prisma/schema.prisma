@@ -134,6 +134,13 @@ model Feedback {
   course Course @relation(fields: [course_id], references: [id])
 }
 
+model RefreshToken {
+  id Int @id @default(autoincrement())
+  token String
+  userId Int
+  expiryDate DateTime
+}
+
 enum Role {
   USER
   ADMIN
