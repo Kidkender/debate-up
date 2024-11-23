@@ -46,7 +46,7 @@ export class AuthService {
       throw new UnauthorizedException('Password mismatch');
     }
 
-    const tokens = this.generateUserToken(user.id);
+    const tokens = await this.generateUserToken(user.id);
     return {
       ...tokens,
       userId: user.id,
@@ -74,20 +74,16 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token is invalid');
     }
 
-    await this.primsaService.refreshToken.delete({ where: { id: token.id } });
-
     return this.generateUserToken(token.userId);
   }
 
   async storeRefreshToken(token: string, userId: number) {
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 3);
-    await this.primsaService.refreshToken.create({
-      data: {
-        token,
-        userId,
-        expiryDate,
-      },
+    await this.primsaService.refreshToken.upsert({
+      where: { token },
+      update: { expiryDate },
+      create: { token, userId, expiryDate },
     });
   }
 }
