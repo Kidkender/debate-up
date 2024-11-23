@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { SignUpDto } from './dtos/signup.dto';
@@ -10,6 +11,7 @@ import { LoginDto } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -85,5 +87,20 @@ export class AuthService {
       update: { expiryDate },
       create: { token, userId, expiryDate },
     });
+  }
+
+  async getUserById(userId: number): Promise<User> {
+    const user = await this.primsaService.user.findFirst({
+      where: { id: userId },
+    });
+    return user;
+  }
+
+  async generateEmailVerification(userId: number) {
+    const user = await this.getUserById(userId);
+
+    if (!user) {
+      throw new NotFoundException(`User ${userId} does not exist`);
+    }
   }
 }
