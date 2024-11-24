@@ -1,12 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, SendMailOptions, Transporter } from 'nodemailer';
-import config, { ConfigType } from 'src/config/config';
+import { ConfigType } from 'src/config/config';
 import { SendMailDto } from './dto/sendMail.dto';
 
 @Injectable()
 export class EmailService {
   private mailTransport: Transporter;
+  private readonly logger = new Logger(EmailService.name);
 
   constructor(private configService: ConfigService<ConfigType>) {
     const config = this.configService.get('mail');
@@ -39,6 +40,7 @@ export class EmailService {
       await this.mailTransport.sendMail(mailOptions);
       return { success: true };
     } catch (error) {
+      this.logger.error('Failed send emal request: ' + error);
       throw new BadRequestException('send mail error: ', error);
     }
   }

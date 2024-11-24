@@ -24,6 +24,11 @@ model User {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
+  emailVerified     Boolean @default(false)
+  verificationCode  String?
+  otpExpiry         DateTime?
+  lastOtpSent       DateTime?
+
   progress      UserCourseProgress[]
   debates       DebateSession[]
   forumPosts   Forum[]
