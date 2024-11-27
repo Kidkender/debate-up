@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
 import { generateOtp } from './../utils/crypto';
-import { EmailService } from 'src/mails/mail.service';
+import { EmailService } from 'src/third-party/mail.service';
 
 @Injectable()
 export class AuthService {

@@ -7,7 +7,8 @@ import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import config, { ConfigType } from './config/config';
-import { MailModule } from './mails/mail.module';
+import { ResourceModule } from './resource/resource.module';
+import { ThirdPartyModule } from './third-party/thirdParty.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { MailModule } from './mails/mail.module';
     PrismaModule,
     UserModule,
     AuthModule,
-    MailModule,
+    ThirdPartyModule,
+    ResourceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
