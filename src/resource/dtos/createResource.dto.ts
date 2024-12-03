@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ResourceType } from '@prisma/client';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateResourceDto {
   @IsNotEmpty()
@@ -11,9 +12,11 @@ export class CreateResourceDto {
 
   @IsNotEmpty()
   @IsString()
-  url: string;
+  category: string;
 
   @IsNotEmpty()
-  @IsString()
-  category: string;
+  @IsEnum(ResourceType, {
+    message: 'Resource must be type VIDEO, ARTICLE OR BOOK',
+  })
+  type: ResourceType;
 }

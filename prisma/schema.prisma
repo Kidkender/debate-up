@@ -44,6 +44,8 @@ model Resource {
   description String?
   url         String
   category    String
+  type        ResourceType
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -171,4 +173,10 @@ enum NotificationType {
   REMINDER
   FORUM
   COURSE
+}
+
+enum ResourceType {
+  VIDEO
+  ARTICLE
+  BOOK
 }
