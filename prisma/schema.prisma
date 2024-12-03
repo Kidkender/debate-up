@@ -43,8 +43,20 @@ model Resource {
   title       String
   description String?
   url         String
-  category    String
   type        ResourceType
+  categoryId Int 
+  category Category @relation(fields: [categoryId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Category {
+  id Int @id @default(autoincrement())
+  name String @unique
+  description String?
+  resources   Resource[]
+
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -58,6 +70,8 @@ model Course {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
+  quizId Int
+  quiz Quiz[]
   contents  CourseContent[]
   progress  UserCourseProgress[]
   feedbacks Feedback[]
@@ -78,6 +92,7 @@ model UserCourseProgress {
   userId       Int
   courseId     Int
   progress      Float    @default(0)
+  isCompleted  Boolean @default(false)
   lastAccessed DateTime @default(now())
 
   user   User   @relation(fields: [userId], references: [id])
@@ -156,6 +171,25 @@ model RefreshToken {
   expiryDate DateTime
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model Quiz {
+  id        Int         @id @default(autoincrement())
+  courseId  Int
+  title     String
+  questions QuizQuestion[]
+
+  course Course @relation(fields: [courseId], references: [id])
+}
+
+model QuizQuestion {
+  id       Int    @id @default(autoincrement())
+  quizId   Int
+  question String
+  options  String
+  answer   String
+
+  quiz Quiz @relation(fields: [quizId], references: [id])
 }
 
 enum Role {

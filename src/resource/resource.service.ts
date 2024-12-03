@@ -3,6 +3,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateResourceDto } from './dtos/createResource.dto';
 import { S3Service } from 'src/third-party/s3.service';
 import { Resource } from '@prisma/client';
+import { FilterResourceDto } from './dtos/filter-resource.dto';
+import { CategoryService } from 'src/category/category.service';
 
 @Injectable()
 export class ResourceService {
@@ -10,12 +12,15 @@ export class ResourceService {
   constructor(
     private prismaService: PrismaService,
     private s3Service: S3Service,
+    private readonly categoryService: CategoryService,
   ) {}
 
-  async create(
+  async createResource(
     file: Express.Multer.File,
     createResourceDto: CreateResourceDto,
   ) {
+    await this.categoryService.findById(createResourceDto.categoryId);
+
     const fileUrl = await this.s3Service.uploadToCloud(file);
 
     const newResource = await this.prismaService.resource.create({
@@ -25,8 +30,30 @@ export class ResourceService {
     this.logger.log(`Create new resource ${newResource.id} successfully`);
   }
 
-  async getResource(): Promise<Resource[]> {
-    return await this.prismaService.resource.findMany();
+  async getResources(filterDto: FilterResourceDto): Promise<Resource[]> {
+    const { categoryId, type, search } = filterDto;
+    const normalizedSearch = search?.toLowerCase();
+
+    return await this.prismaService.resource.findMany({
+      where: {
+        ...(categoryId && { categoryId }),
+        ...(type && { type }),
+        ...(search && {
+          OR: [
+            {
+              title: {
+                contains: normalizedSearch,
+              },
+            },
+            {
+              description: {
+                contains: normalizedSearch,
+              },
+            },
+          ],
+        }),
+      },
+    });
   }
 
   async getResourceById(id: number): Promise<Resource> {
@@ -67,5 +94,9 @@ export class ResourceService {
       throw new BadRequestException('Invalid S3 URL');
     }
     return key;
+  }
+
+  async getResourceByCategory(categoryId: number): Promise<Resource[]> {
+    return this.prismaService.resource.findMany({ where: { categoryId } });
   }
 }

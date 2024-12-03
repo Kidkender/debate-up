@@ -9,6 +9,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import config, { ConfigType } from './config/config';
 import { ResourceModule } from './resource/resource.module';
 import { ThirdPartyModule } from './third-party/thirdParty.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ThirdPartyModule } from './third-party/thirdParty.module';
     AuthModule,
     ThirdPartyModule,
     ResourceModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

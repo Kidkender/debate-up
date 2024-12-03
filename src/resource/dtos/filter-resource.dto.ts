@@ -1,11 +1,16 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsString, IsOptional, IsEnum } from 'class-validator';
+import { ResourceType } from '@prisma/client';
 
 export class FilterResourceDto {
   @IsOptional()
   @IsString()
-  title?: string;
+  categoryId?: number;
+
+  @IsOptional()
+  @IsEnum(ResourceType)
+  type?: ResourceType;
 
   @IsOptional()
   @IsString()
-  category?: string;
+  search?: string;
 }

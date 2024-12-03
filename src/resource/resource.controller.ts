@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -13,6 +14,7 @@ import { ResourceService } from './resource.service';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateResourceDto } from './dtos/createResource.dto';
+import { FilterResourceDto } from './dtos/filter-resource.dto';
 
 @Controller('resource')
 export class ResourceController {
@@ -25,16 +27,21 @@ export class ResourceController {
     @UploadedFile() file: Express.Multer.File,
     @Body() data: CreateResourceDto,
   ) {
-    return this.resourceService.create(file, data);
+    return this.resourceService.createResource(file, data);
   }
 
   @Get()
-  async getResources() {
-    return await this.resourceService.getResource();
+  findAll(@Query() filterDto: FilterResourceDto) {
+    return this.resourceService.getResources(filterDto);
   }
 
   @Get('/:id')
   async getResource(@Param('id', ParseIntPipe) id: number) {
     return await this.resourceService.getResourceById(id);
+  }
+
+  @Get()
+  async findByCategory(@Query('categoryId') categoryId: number) {
+    return this.resourceService.getResourceByCategory(categoryId);
   }
 }
