@@ -11,8 +11,7 @@ export class CreateResourceDto {
   description?: string;
 
   @IsNotEmpty()
-  @IsString()
-  category: string;
+  categoryId: number;
 
   @IsNotEmpty()
   @IsEnum(ResourceType, {
