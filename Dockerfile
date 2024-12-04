@@ -8,9 +8,9 @@ RUN npm install
 
 COPY . .
 
-RUN npm db:migrate
+RUN npx prisma migrate dev --name init
 
-RUN npm db:push 
+RUN npx prisma db push
 
 RUN npm run build
 
