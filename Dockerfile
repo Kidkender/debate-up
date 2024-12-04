@@ -10,7 +10,7 @@ COPY . .
 
 RUN npx prisma migrate dev --name init
 
-RUN npx prisma db push
+RUN npx prisma migrate deploy
 
 RUN npm run build
 
