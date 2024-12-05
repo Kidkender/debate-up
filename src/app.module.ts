@@ -10,6 +10,7 @@ import config, { ConfigType } from './config/config';
 import { ResourceModule } from './resource/resource.module';
 import { ThirdPartyModule } from './third-party/thirdParty.module';
 import { CategoryModule } from './category/category.module';
+import { CourseModule } from './course/course.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { CategoryModule } from './category/category.module';
     ThirdPartyModule,
     ResourceModule,
     CategoryModule,
+    CourseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

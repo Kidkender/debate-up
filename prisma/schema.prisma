@@ -75,6 +75,9 @@ model Course {
   contents  CourseContent[]
   progress  UserCourseProgress[]
   feedbacks Feedback[]
+
+  prerequisites PrerequisiteCourses[] @relation("CoursePrereq")
+  dependentCourses PrerequisiteCourses[] @relation("CoursePrereqInverse")
 }
 
 model CourseContent {
@@ -89,15 +92,17 @@ model CourseContent {
 
 model UserCourseProgress {
   id            Int      @id @default(autoincrement())
-  userId       Int
-  courseId     Int
+  userId        Int
+  courseId      Int
   progress      Float    @default(0)
-  isCompleted  Boolean @default(false)
-  lastAccessed DateTime @default(now())
+  lastAccessed  DateTime @default(now())
+  completedAt   DateTime?
+  isCompleted   Boolean  @default(false)
 
   user   User   @relation(fields: [userId], references: [id])
   course Course @relation(fields: [courseId], references: [id])
 }
+
 
 model DebateSession {
   id             Int      @id @default(autoincrement())
@@ -191,6 +196,16 @@ model QuizQuestion {
 
   quiz Quiz @relation(fields: [quizId], references: [id])
 }
+
+model PrerequisiteCourses {
+  id         Int     @id @default(autoincrement())
+  courseId   Int
+  prereqId   Int
+
+  course     Course  @relation("CoursePrereq", fields: [courseId], references: [id])
+  prereq     Course  @relation("CoursePrereqInverse", fields: [prereqId], references: [id])
+}
+
 
 enum Role {
   USER
