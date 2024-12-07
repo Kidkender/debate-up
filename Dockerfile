@@ -8,7 +8,7 @@ RUN npm install
 
 COPY . .
 
-RUN npx prisma migrate dev --name update_database
+RUN npx prisma generate
 
 RUN npx prisma migrate deploy
 
