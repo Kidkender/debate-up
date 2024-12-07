@@ -1,6 +1,6 @@
 import {
   Body,
-  Controller,
+  Controller,  ParseIntPipe,
   Param,
   Put,
   Post,
@@ -22,7 +22,7 @@ export class CategoryController {
 
   @Put(':id')
   update(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
     return this.categoryService.update(id, updateCategoryDto);
@@ -34,12 +34,12 @@ export class CategoryController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: number) {
+  async findOne(@Param('id', ParseIntPipe) id: number) {
     return await this.categoryService.findById(id);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: number) {
+  async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.categoryService.remove(id);
   }
 }
