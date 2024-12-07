@@ -37,6 +37,7 @@ model User {
   notifications Notification[]
   feedbacks     Feedback[]
   refreshToken  RefreshToken[]
+  reports Report[]
 }
 
 model Resource {
@@ -205,6 +206,18 @@ model PrerequisiteCourses {
   course     Course  @relation("CoursePrereq", fields: [courseId], references: [id])
   prereq     Course  @relation("CoursePrereqInverse", fields: [prereqId], references: [id])
 }
+
+model Report {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  contentId   Int
+  contentType String
+  reason      String
+  createdAt   DateTime  @default(now())
+
+  User        User      @relation(fields: [userId], references: [id])
+}
+
 
 
 enum Role {

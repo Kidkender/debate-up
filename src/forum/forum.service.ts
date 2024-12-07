@@ -1,11 +1,16 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreatePostDto } from './dtos/create-post.dto';
+import { UserService } from 'src/user/user.service';
 import { CreateCommentDto } from './dtos/add-comment.dto';
-import { Forum } from '@prisma/client';
+import { CreatePostDto } from './dtos/create-post.dto';
 import { UpdateCommentDto } from './dtos/update-comment.dto';
 import { UpdatePostDto } from './dtos/update-post.dto';
-import { UserService } from 'src/user/user.service';
+import { HttpService } from 'src/common/http.service';
 
 @Injectable()
 export class ForumService {
@@ -13,11 +18,24 @@ export class ForumService {
 
   constructor(
     private prismaService: PrismaService,
-    private userService: UserService,
-  ) {}
+    private httpService: HttpService,
+  ) {
+    this.httpService = new HttpService(process.env.AI_API_URL);
+  }
+
+  async isSensitiveContent(
+    content: string,
+  ): Promise<{ isSensitive: boolean; reason?: string }> {
+    return this.httpService.post('/check-sensitive-content', { content });
+  }
 
   async createPost(userId: number, data: CreatePostDto) {
     const { title, content } = data;
+    const { isSensitive, reason } = await this.isSensitiveContent(title);
+    if (isSensitive) {
+      throw new BadRequestException(`Inappropriate content. Reason: ${reason}`);
+    }
+
     const post = await this.prismaService.forum.create({
       data: {
         userId,
@@ -63,6 +81,12 @@ export class ForumService {
 
   async addComment(userId: number, data: CreateCommentDto) {
     const { comment, parentId, forumId } = data;
+
+    const { isSensitive, reason } = await this.isSensitiveContent(comment);
+    if (isSensitive) {
+      throw new BadRequestException(`Inappropriate content. Reason: ${reason}`);
+    }
+
     const newComment = this.prismaService.forumComment.create({
       data: {
         userId,
@@ -76,6 +100,11 @@ export class ForumService {
 
   async updatePost(userId: number, data: UpdatePostDto) {
     const { postId, title, content } = data;
+
+    const { isSensitive, reason } = await this.isSensitiveContent(title);
+    if (isSensitive) {
+      throw new BadRequestException(`Inappropriate content. Reason: ${reason}`);
+    }
 
     const post = await this.prismaService.forum.findUnique({
       where: { id: postId },
@@ -96,6 +125,11 @@ export class ForumService {
 
   async updateComment(userId: number, data: UpdateCommentDto) {
     const { commentId, newComment } = data;
+
+    const { isSensitive, reason } = await this.isSensitiveContent(newComment);
+    if (isSensitive) {
+      throw new BadRequestException(`Inappropriate content. Reason: ${reason}`);
+    }
 
     const comment = await this.prismaService.forumComment.findUnique({
       where: { id: commentId },

@@ -12,6 +12,8 @@ import { ThirdPartyModule } from './third-party/thirdParty.module';
 import { CategoryModule } from './category/category.module';
 import { CourseModule } from './course/course.module';
 import { ForumModule } from './forum/forum.module';
+import { HttpService } from './common/http.service';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -36,6 +38,7 @@ import { ForumModule } from './forum/forum.module';
     CategoryModule,
     CourseModule,
     ForumModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

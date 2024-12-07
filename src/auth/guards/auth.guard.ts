@@ -11,6 +11,7 @@ import { Request } from 'express';
 import { Observable } from 'rxjs';
 import { NO_ACCOUNT_GUARD_KEY } from '../decorators/no-account-guard.decorator';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { AuthRequest } from '../auth-request.interface';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -35,7 +36,7 @@ export class AuthGuard implements CanActivate {
     if (isPublic || noAccountGuard) {
       return true;
     }
-    const request = context.switchToHttp().getRequest();
+    const request: AuthRequest = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
@@ -44,10 +45,18 @@ export class AuthGuard implements CanActivate {
 
     try {
       const payload = this.jwtService.verify(token);
-      request.userId = payload.userId;
+      request.user = { userId: payload.userId, role: payload.role };
     } catch (e) {
-      Logger.error(e.message);
-      throw new UnauthorizedException('Invalid token');
+      if (e.name === 'TokenExpiredError') {
+        Logger.error('Token has expired');
+        throw new UnauthorizedException('Token expired');
+      } else if (e.name === 'JsonWebTokenError') {
+        Logger.error('Invalid token format');
+        throw new UnauthorizedException('Invalid token');
+      } else {
+        Logger.error('Unknown token error');
+        throw new UnauthorizedException('Invalid token');
+      }
     }
     return true;
   }
