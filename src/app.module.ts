@@ -11,6 +11,7 @@ import { ResourceModule } from './resource/resource.module';
 import { ThirdPartyModule } from './third-party/thirdParty.module';
 import { CategoryModule } from './category/category.module';
 import { CourseModule } from './course/course.module';
+import { ForumModule } from './forum/forum.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { CourseModule } from './course/course.module';
     ResourceModule,
     CategoryModule,
     CourseModule,
+    ForumModule,
   ],
   controllers: [AppController],
   providers: [AppService],

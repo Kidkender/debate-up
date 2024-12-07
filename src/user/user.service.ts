@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -26,5 +26,13 @@ export class UserService {
     });
 
     this.logger.log(`Create user with email ${user.email} successfully`);
+  }
+
+  async getUserById(id: number): Promise<User> {
+    const user = await this.prismaService.user.findFirst({ where: { id } });
+    if (!user) {
+      throw new BadRequestException(`User ${id} not found`);
+    }
+    return user;
   }
 }
