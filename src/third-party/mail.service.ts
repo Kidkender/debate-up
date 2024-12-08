@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, SendMailOptions, Transporter } from 'nodemailer';
 import { ConfigType } from 'src/config/config';
@@ -41,7 +45,7 @@ export class EmailService {
       return { success: true };
     } catch (error) {
       this.logger.error('Failed send emal request: ' + error);
-      throw new BadRequestException('send mail error: ', error);
+      throw new InternalServerErrorException();
     }
   }
 }

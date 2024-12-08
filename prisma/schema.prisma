@@ -10,8 +10,8 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:TxQOrLxvsxQlklAALUFdxesUmzBeBsKZ@autorack.proxy.rlwy.net:27233/railway"
-  // url = env("DATABASE_URL")
+  // url      = "mysql://root:TxQOrLxvsxQlklAALUFdxesUmzBeBsKZ@autorack.proxy.rlwy.net:27233/railway"
+  url = env("DATABASE_URL")
 }
 
 model User {
@@ -19,9 +19,11 @@ model User {
   email             String   @unique
   password          String
   name              String
+  avatarUrl String?
   social_login_id   String?
   social_login_type String?
   role              Role     @default(USER)
+  status UserStatus @default(ACTIVE)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -38,6 +40,7 @@ model User {
   feedbacks     Feedback[]
   refreshToken  RefreshToken[]
   reports Report[]
+  userViolents UserViolation[]
 }
 
 model Resource {
@@ -48,7 +51,8 @@ model Resource {
   type        ResourceType
   categoryId Int 
   category Category @relation(fields: [categoryId], references: [id])
-
+  isPublished   Boolean @default(false)
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -123,6 +127,8 @@ model Forum {
   userId   Int
   title     String
   content   String
+  likeCount Int @default(0)
+  dislikeCount Int @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -135,6 +141,7 @@ model ForumComment {
   forumId  Int
   userId   Int
   comment   String
+
   parentId  Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -213,11 +220,21 @@ model Report {
   contentId   Int
   contentType String
   reason      String
+  status ReportStatus @default(PENDING)
   createdAt   DateTime  @default(now())
 
   User        User      @relation(fields: [userId], references: [id])
 }
 
+model UserViolation {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  reason      String
+  actionTaken String
+  createdAt   DateTime @default(now())
+
+  user   User @relation(fields: [userId], references: [id])
+}
 
 
 enum Role {
@@ -241,4 +258,16 @@ enum ResourceType {
   VIDEO
   ARTICLE
   BOOK
+}
+
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  REJECTED
+}
+
+enum UserStatus {
+  ACTIVE      
+  SUSPENDED    
+  BANNED       
 }

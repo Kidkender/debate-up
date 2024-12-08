@@ -1,6 +1,7 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { User, UserStatus, UserViolation } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateActionUser } from './dtos/create-action.dto';
 
 @Injectable()
 export class UserService {
@@ -38,5 +39,39 @@ export class UserService {
 
   async getUsers(): Promise<User[]> {
     return await this.prismaService.user.findMany();
+  }
+
+  async bannedUser(data: CreateActionUser) {
+    const user = await this.getUserById(data.userId);
+
+    await this.prismaService.user.update({
+      where: { id: user.id },
+      data: { status: UserStatus.BANNED },
+    });
+
+    await this.prismaService.userViolation.create({
+      data: {
+        userId: user.id,
+        reason: data.reason,
+        actionTaken: UserStatus.BANNED,
+      },
+    });
+
+    this.logger.log(`User ${user.id} is banned `);
+  }
+
+  async unlockUser(userId: number) {
+    const user = await this.getUserById(userId);
+
+    await this.prismaService.user.update({
+      where: { id: user.id },
+      data: { status: UserStatus.SUSPENDED },
+    });
+
+    this.logger.log(`Unlock ${userId} `);
+  }
+
+  async getUserViolent(): Promise<UserViolation[]> {
+    return this.prismaService.userViolation.findMany();
   }
 }
