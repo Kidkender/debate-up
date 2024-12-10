@@ -110,7 +110,7 @@ export class ForumService {
       where: { id: postId },
     });
     if (!post || post.userId !== userId) {
-      throw new Error('Bạn không có quyền chỉnh sửa bài viết này');
+      throw new Error('You do not have permission to access');
     }
     await this.prismaService.forum.update({
       where: { id: postId },

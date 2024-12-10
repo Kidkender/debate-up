@@ -4,13 +4,17 @@ import {
   Delete,
   Get,
   Param,
-  Patch,
+  ParseIntPipe,
   Post,
+  Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { CreateCommentDto } from './dtos/add-comment.dto';
 import { CreatePostDto } from './dtos/create-post.dto';
+import { UpdateCommentDto } from './dtos/update-comment.dto';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { ForumService } from './forum.service';
 
@@ -18,7 +22,8 @@ import { ForumService } from './forum.service';
 export class ForumController {
   constructor(private readonly forumService: ForumService) {}
 
-  @Post()
+  @Post('post')
+  @UseGuards(AuthGuard)
   createPost(
     @CurrentUser() userId: number,
     @Body() createPostDto: CreatePostDto,
@@ -26,35 +31,61 @@ export class ForumController {
     return this.forumService.createPost(userId, createPostDto);
   }
 
-  @Get()
-  getPosts(@Query('skip') skip: number, @Query('take') take: number) {
+  @Get('post')
+  getPosts(
+    @Query('skip', ParseIntPipe) skip = 0,
+    @Query('take', ParseIntPipe) take = 10,
+  ) {
     return this.forumService.getPosts(skip, take);
   }
 
-  @Get(':id')
-  getPostById(@Param('id') id: number) {
-    return this.forumService.getPostById(id);
+  @Get('post/:postId')
+  getPostById(@Param('postId', ParseIntPipe) postId: number) {
+    return this.forumService.getPostById(postId);
   }
 
-  @Post(':id/comment')
+  @Post('comment')
+  @UseGuards(AuthGuard)
   addComment(
     @CurrentUser() userId: number,
-    @Body() addCommentDto: CreateCommentDto,
+    @Body() createCommentDto: CreateCommentDto,
   ) {
-    return this.forumService.addComment(userId, addCommentDto);
+    return this.forumService.addComment(userId, createCommentDto);
   }
 
-  @Patch(':id')
+  @Put('post')
+  @UseGuards(AuthGuard)
   updatePost(
     @CurrentUser() userId: number,
-
     @Body() updatePostDto: UpdatePostDto,
   ) {
     return this.forumService.updatePost(userId, updatePostDto);
   }
 
-  @Delete(':id')
-  deletePost(@CurrentUser() userId: number, @Param('id') id: number) {
-    return this.forumService.deletePost(id, userId);
+  @Delete('post/:postId')
+  @UseGuards(AuthGuard)
+  deletePost(
+    @CurrentUser() userId: number,
+    @Param('postId', ParseIntPipe) postId: number,
+  ) {
+    return this.forumService.deletePost(postId, userId);
+  }
+
+  @Put('comment')
+  @UseGuards(AuthGuard)
+  updateComment(
+    @CurrentUser() userId: number,
+    @Body() updateCommentDto: UpdateCommentDto,
+  ) {
+    return this.forumService.updateComment(userId, updateCommentDto);
+  }
+
+  @Delete('comment/:commentId')
+  @UseGuards(AuthGuard)
+  deleteComment(
+    @CurrentUser() userId: number,
+    @Param('commentId', ParseIntPipe) commentId: number,
+  ) {
+    return this.forumService.deleteComment(commentId, userId);
   }
 }
