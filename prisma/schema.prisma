@@ -10,8 +10,8 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  // url      = "mysql://root:TxQOrLxvsxQlklAALUFdxesUmzBeBsKZ@autorack.proxy.rlwy.net:27233/railway"
-  url = env("DATABASE_URL")
+  url      = "mysql://root:TxQOrLxvsxQlklAALUFdxesUmzBeBsKZ@autorack.proxy.rlwy.net:27233/railway"
+  // url = env("DATABASE_URL")
 }
 
 model User {

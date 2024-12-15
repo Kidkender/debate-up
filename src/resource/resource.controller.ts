@@ -42,7 +42,7 @@ export class ResourceController {
     return await this.resourceService.getResourceById(id);
   }
 
-  @Get()
+  @Get('/category')
   async findByCategory(@Query('categoryId') categoryId: number) {
     return this.resourceService.getResourceByCategory(categoryId);
   }
