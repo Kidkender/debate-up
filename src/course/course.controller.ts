@@ -13,7 +13,9 @@ import { CourseService } from './course.service';
 import { CourseLevel } from 'src/common/enumerations/courseLevel.enum';
 import { CreateCourseDto } from './dtos/create-course.dto';
 import { UpdateCourseDto } from './dtos/update-course.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('course')
 @Controller('course')
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}

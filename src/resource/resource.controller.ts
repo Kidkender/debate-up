@@ -15,7 +15,9 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateResourceDto } from './dtos/createResource.dto';
 import { FilterResourceDto } from './dtos/filter-resource.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('resource')
 @Controller('resource')
 export class ResourceController {
   constructor(private resourceService: ResourceService) {}

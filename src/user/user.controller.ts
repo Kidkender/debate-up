@@ -12,7 +12,9 @@ import { CreateActionUser } from './dtos/create-action.dto';
 import { Roles } from 'src/auth/decorators/role.decorator';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/role.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('user')
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}

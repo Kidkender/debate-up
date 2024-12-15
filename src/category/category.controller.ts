@@ -1,6 +1,7 @@
 import {
   Body,
-  Controller,  ParseIntPipe,
+  Controller,
+  ParseIntPipe,
   Param,
   Put,
   Post,
@@ -10,7 +11,9 @@ import {
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('category')
 @Controller('categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}

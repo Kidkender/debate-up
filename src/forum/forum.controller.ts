@@ -17,7 +17,9 @@ import { CreatePostDto } from './dtos/create-post.dto';
 import { UpdateCommentDto } from './dtos/update-comment.dto';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { ForumService } from './forum.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('forum')
 @Controller('forum')
 export class ForumController {
   constructor(private readonly forumService: ForumService) {}
