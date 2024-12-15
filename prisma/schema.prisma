@@ -15,57 +15,56 @@ datasource db {
 }
 
 model User {
-  id                Int      @id @default(autoincrement())
-  email             String   @unique
+  id                Int        @id @default(autoincrement())
+  email             String     @unique
   password          String
   name              String
-  avatarUrl String?
+  avatarUrl         String?
   social_login_id   String?
   social_login_type String?
-  role              Role     @default(USER)
-  status UserStatus @default(ACTIVE)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  role              Role       @default(USER)
+  status            UserStatus @default(ACTIVE)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 
-  emailVerified     Boolean @default(false)
-  verificationCode  String?
-  otpExpiry         DateTime?
-  lastOtpSent       DateTime?
+  emailVerified    Boolean   @default(false)
+  verificationCode String?
+  otpExpiry        DateTime?
+  lastOtpSent      DateTime?
 
   progress      UserCourseProgress[]
   debates       DebateSession[]
-  forumPosts   Forum[]
+  forumPosts    Forum[]
   comments      ForumComment[]
   notifications Notification[]
   feedbacks     Feedback[]
   refreshToken  RefreshToken[]
-  reports Report[]
-  userViolents UserViolation[]
+  reports       Report[]
+  userViolents  UserViolation[]
 }
 
 model Resource {
-  id          Int      @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   title       String
   description String?
   url         String
   type        ResourceType
-  categoryId Int 
-  category Category @relation(fields: [categoryId], references: [id])
-  isPublished   Boolean @default(false)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  categoryId  Int
+  category    Category     @relation(fields: [categoryId], references: [id])
+  isPublished Boolean      @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Category {
-  id Int @id @default(autoincrement())
-  name String @unique
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
   description String?
   resources   Resource[]
 
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Course {
@@ -76,18 +75,18 @@ model Course {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
-  quiz Quiz[]
+  quiz      Quiz[]
   contents  CourseContent[]
   progress  UserCourseProgress[]
   feedbacks Feedback[]
 
-  prerequisites PrerequisiteCourses[] @relation("CoursePrereq")
+  prerequisites    PrerequisiteCourses[] @relation("CoursePrereq")
   dependentCourses PrerequisiteCourses[] @relation("CoursePrereqInverse")
 }
 
 model CourseContent {
   id          Int      @id @default(autoincrement())
-  courseId   Int
+  courseId    Int
   content_url String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -96,25 +95,24 @@ model CourseContent {
 }
 
 model UserCourseProgress {
-  id            Int      @id @default(autoincrement())
-  userId        Int
-  courseId      Int
-  progress      Float    @default(0)
-  lastAccessed  DateTime @default(now())
-  completedAt   DateTime?
-  isCompleted   Boolean  @default(false)
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  courseId     Int
+  progress     Float     @default(0)
+  lastAccessed DateTime  @default(now())
+  completedAt  DateTime?
+  isCompleted  Boolean   @default(false)
 
   user   User   @relation(fields: [userId], references: [id])
   course Course @relation(fields: [courseId], references: [id])
 }
 
-
 model DebateSession {
   id             Int      @id @default(autoincrement())
-  userId        Int
+  userId         Int
   topic          String
-  aiResponse    String
-  userResponse  String
+  aiResponse     String
+  userResponse   String
   feedback_score Float?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -123,24 +121,24 @@ model DebateSession {
 }
 
 model Forum {
-  id        Int      @id @default(autoincrement())
-  userId   Int
-  title     String
-  content   String
-  likeCount Int @default(0)
-  dislikeCount Int @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  title        String
+  content      String
+  likeCount    Int      @default(0)
+  dislikeCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   user     User           @relation(fields: [userId], references: [id])
   comments ForumComment[]
 }
 
 model ForumComment {
-  id        Int      @id @default(autoincrement())
-  forumId  Int
-  userId   Int
-  comment   String
+  id      Int    @id @default(autoincrement())
+  forumId Int
+  userId  Int
+  comment String
 
   parentId  Int?
   createdAt DateTime @default(now())
@@ -154,10 +152,10 @@ model ForumComment {
 
 model Notification {
   id        Int              @id @default(autoincrement())
-  userId   Int
+  userId    Int
   message   String
   type      NotificationType
-  isRead   Boolean          @default(false)
+  isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 
@@ -166,8 +164,8 @@ model Notification {
 
 model Feedback {
   id        Int      @id @default(autoincrement())
-  userId   Int
-  courseId Int
+  userId    Int
+  courseId  Int
   feedback  String
   rating    Int
   createdAt DateTime @default(now())
@@ -187,7 +185,7 @@ model RefreshToken {
 }
 
 model Quiz {
-  id        Int         @id @default(autoincrement())
+  id        Int            @id @default(autoincrement())
   courseId  Int
   title     String
   questions QuizQuestion[]
@@ -206,24 +204,24 @@ model QuizQuestion {
 }
 
 model PrerequisiteCourses {
-  id         Int     @id @default(autoincrement())
-  courseId   Int
-  prereqId   Int
+  id       Int @id @default(autoincrement())
+  courseId Int
+  prereqId Int
 
-  course     Course  @relation("CoursePrereq", fields: [courseId], references: [id])
-  prereq     Course  @relation("CoursePrereqInverse", fields: [prereqId], references: [id])
+  course Course @relation("CoursePrereq", fields: [courseId], references: [id])
+  prereq Course @relation("CoursePrereqInverse", fields: [prereqId], references: [id])
 }
 
 model Report {
-  id          Int       @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   userId      Int
   contentId   Int
   contentType String
   reason      String
-  status ReportStatus @default(PENDING)
-  createdAt   DateTime  @default(now())
+  status      ReportStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
 
-  User        User      @relation(fields: [userId], references: [id])
+  User User @relation(fields: [userId], references: [id])
 }
 
 model UserViolation {
@@ -233,9 +231,8 @@ model UserViolation {
   actionTaken String
   createdAt   DateTime @default(now())
 
-  user   User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }
-
 
 enum Role {
   USER
@@ -267,7 +264,7 @@ enum ReportStatus {
 }
 
 enum UserStatus {
-  ACTIVE      
-  SUSPENDED    
-  BANNED       
+  ACTIVE
+  SUSPENDED
+  BANNED
 }
