@@ -36,7 +36,7 @@ export class ResourceService {
 
     return await this.prismaService.resource.findMany({
       where: {
-        ...(categoryId && { categoryId }),
+        ...(Number(categoryId) && { categoryId: Number(categoryId) }),
         ...(type && { type }),
         ...(search && {
           OR: [
