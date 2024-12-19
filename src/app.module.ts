@@ -14,6 +14,7 @@ import { CourseModule } from './course/course.module';
 import { ForumModule } from './forum/forum.module';
 import { HttpService } from './common/http.service';
 import { ReportsModule } from './reports/reports.module';
+import { PracticeModule } from './practice/practice.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { ReportsModule } from './reports/reports.module';
     CourseModule,
     ForumModule,
     ReportsModule,
+    PracticeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

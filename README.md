@@ -45,6 +45,26 @@ $ yarn run start:dev
 $ yarn run start:prod
 ```
 
+## In production
+
+### Check status prisma
+
+```bash
+  npx prisma migrate status
+```
+
+### Resolve the Migration Issue
+
+```bash
+  npx prisma migrate resolve --applied "name_migration"
+```
+
+### Deploy migrate
+
+```bash
+  npx prisma migrate deploy
+```
+
 ## Test
 
 ```bash

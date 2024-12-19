@@ -4,9 +4,11 @@ CREATE TABLE `User` (
     `email` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
+    `avatarUrl` VARCHAR(191) NULL,
     `social_login_id` VARCHAR(191) NULL,
     `social_login_type` VARCHAR(191) NULL,
     `role` ENUM('USER', 'ADMIN') NOT NULL DEFAULT 'USER',
+    `status` ENUM('ACTIVE', 'SUSPENDED', 'BANNED') NOT NULL DEFAULT 'ACTIVE',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `emailVerified` BOOLEAN NOT NULL DEFAULT false,
@@ -26,6 +28,7 @@ CREATE TABLE `Resource` (
     `url` VARCHAR(191) NOT NULL,
     `type` ENUM('VIDEO', 'ARTICLE', 'BOOK') NOT NULL,
     `categoryId` INTEGER NOT NULL,
+    `isPublished` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -84,9 +87,9 @@ CREATE TABLE `UserCourseProgress` (
 CREATE TABLE `DebateSession` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userId` INTEGER NOT NULL,
-    `topic` VARCHAR(191) NOT NULL,
+    `topic` VARCHAR(255) NOT NULL,
     `aiResponse` VARCHAR(191) NOT NULL,
-    `userResponse` VARCHAR(191) NOT NULL,
+    `userResponse` TEXT NOT NULL,
     `feedback_score` DOUBLE NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -100,6 +103,8 @@ CREATE TABLE `Forum` (
     `userId` INTEGER NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `content` VARCHAR(191) NOT NULL,
+    `likeCount` INTEGER NOT NULL DEFAULT 0,
+    `dislikeCount` INTEGER NOT NULL DEFAULT 0,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -192,6 +197,18 @@ CREATE TABLE `Report` (
     `contentId` INTEGER NOT NULL,
     `contentType` VARCHAR(191) NOT NULL,
     `reason` VARCHAR(191) NOT NULL,
+    `status` ENUM('PENDING', 'RESOLVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `UserViolation` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL,
+    `reason` VARCHAR(191) NOT NULL,
+    `actionTaken` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     PRIMARY KEY (`id`)
@@ -250,3 +267,6 @@ ALTER TABLE `PrerequisiteCourses` ADD CONSTRAINT `PrerequisiteCourses_prereqId_f
 
 -- AddForeignKey
 ALTER TABLE `Report` ADD CONSTRAINT `Report_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `UserViolation` ADD CONSTRAINT `UserViolation_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -8,12 +8,15 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CourseService } from './course.service';
 import { CourseLevel } from 'src/common/enumerations/courseLevel.enum';
 import { CreateCourseDto } from './dtos/create-course.dto';
 import { UpdateCourseDto } from './dtos/update-course.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { Roles } from 'src/auth/decorators/role.decorator';
 
 @ApiTags('course')
 @Controller('course')
@@ -30,11 +33,15 @@ export class CourseController {
   }
 
   @Post()
+  @UseGuards(AuthGuard)
+  @Roles('admin')
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
     return this.courseService.createCourse(createCourseDto);
   }
 
   @Put(':id')
+  @UseGuards(AuthGuard)
+  @Roles('admin')
   async updateCourse(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCourseDto: UpdateCourseDto,
@@ -43,6 +50,8 @@ export class CourseController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard)
+  @Roles('admin')
   async deleteCourse(@Param('id', ParseIntPipe) id: number) {
     return this.courseService.deleteCourse(id);
   }
