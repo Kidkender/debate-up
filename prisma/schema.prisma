@@ -110,9 +110,9 @@ model UserCourseProgress {
 model DebateSession {
   id             Int      @id @default(autoincrement())
   userId         Int
-  topic          String
-  aiResponse     String
-  userResponse   String
+  topic          String @db.VarChar(255)
+  aiResponse     String @db.Text
+  userResponse   String @db.Text
   feedback_score Float?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
