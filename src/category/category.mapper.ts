@@ -4,6 +4,7 @@ import { CategoryResponseDto } from './dtos/category-response.dto';
 export class CategoryMapper {
   public static toResponseDto(category: Category): CategoryResponseDto {
     return {
+      id: category.id,
       name: category.name,
       description: category.description,
     };

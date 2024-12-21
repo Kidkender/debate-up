@@ -39,6 +39,13 @@ export class CourseController {
     return this.courseService.createCourse(createCourseDto);
   }
 
+  @Post('/muti')
+  @UseGuards(AuthGuard)
+  @Roles('admin')
+  async createCourses(@Body() createCourseDto: CreateCourseDto[]) {
+    return this.courseService.createCourses(createCourseDto);
+  }
+
   @Put(':id')
   @UseGuards(AuthGuard)
   @Roles('admin')
