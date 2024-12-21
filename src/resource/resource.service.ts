@@ -19,12 +19,20 @@ export class ResourceService {
     file: Express.Multer.File,
     createResourceDto: CreateResourceDto,
   ) {
-    await this.categoryService.findById(createResourceDto.categoryId);
+    const categoryId = createResourceDto.categoryId;
+
+    await this.categoryService.findById(Number(categoryId));
 
     const fileUrl = await this.s3Service.uploadToCloud(file);
 
     const newResource = await this.prismaService.resource.create({
-      data: { ...createResourceDto, url: fileUrl },
+      data: {
+        title: createResourceDto.title,
+        description: createResourceDto.description,
+        categoryId: Number(categoryId),
+        type: createResourceDto.type,
+        url: fileUrl,
+      },
     });
 
     this.logger.log(`Create new resource ${newResource.id} successfully`);
