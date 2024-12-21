@@ -4,7 +4,7 @@ import { CourseLevel } from 'src/common/enumerations/courseLevel.enum';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCourseDto } from './dtos/create-course.dto';
 import { UpdateCourseDto } from './dtos/update-course.dto';
-import { CreateLessonDto } from './dtos/create-lesson.dto';
+import { selectCourseWithoutLessons } from './selectField.dto';
 
 @Injectable()
 export class CourseService {
@@ -15,13 +15,7 @@ export class CourseService {
   async getCourses(level?: CourseLevel): Promise<Partial<Course>[]> {
     const courses = await this.prismaService.course.findMany({
       where: level ? { level } : undefined,
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        level: true,
-        duration: true,
-      },
+      select: selectCourseWithoutLessons,
     });
     return courses;
   }
@@ -42,7 +36,7 @@ export class CourseService {
     this.logger.log(` ${courses.count} course created`);
   }
 
-  private async ensureCourseExists(id: number): Promise<void> {
+  async ensureCourseExists(id: number): Promise<void> {
     const exists = await this.prismaService.course.findUnique({
       where: { id },
     });
@@ -65,13 +59,12 @@ export class CourseService {
   async getByCourseId(id: number): Promise<Course> {
     const course = await this.prismaService.course.findFirst({
       where: { id },
-      include: {
-        lessons: true,
-      },
+      include: { lessons: true },
     });
     if (!course) {
       throw new NotFoundException(`Course ${id} not found`);
     }
+
     return course;
   }
 
@@ -83,21 +76,5 @@ export class CourseService {
     });
 
     this.logger.log(`Course ${id} deleted`);
-  }
-
-  async createLesson(data: CreateLessonDto) {
-    await this.ensureCourseExists(data.courseId);
-
-    const lesson = await this.prismaService.lesson.create({
-      data: {
-        title: data.title,
-        courseId: data.courseId,
-        content_url: data.contentUrl,
-        content: data.content,
-        order: data.order,
-      },
-    });
-
-    this.logger.log(`Lesson ${data.courseId} created`);
   }
 }

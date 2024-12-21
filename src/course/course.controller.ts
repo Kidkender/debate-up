@@ -5,18 +5,18 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
-  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { CourseService } from './course.service';
+import { ApiTags } from '@nestjs/swagger';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { CourseLevel } from 'src/common/enumerations/courseLevel.enum';
+import { CourseService } from './course.service';
 import { CreateCourseDto } from './dtos/create-course.dto';
 import { UpdateCourseDto } from './dtos/update-course.dto';
-import { ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { Roles } from 'src/auth/decorators/role.decorator';
 
 @ApiTags('Course')
 @Controller('course')
@@ -30,6 +30,11 @@ export class CourseController {
       throw new Error('Invalid course level');
     }
     return this.courseService.getCourses(courseLevel);
+  }
+
+  @Get(':id')
+  async getCourseById(@Param('id', ParseIntPipe) id: number) {
+    return this.courseService.getByCourseId(id);
   }
 
   @Post()
@@ -46,7 +51,7 @@ export class CourseController {
     return this.courseService.createCourses(createCourseDto);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @UseGuards(AuthGuard)
   @Roles('admin')
   async updateCourse(

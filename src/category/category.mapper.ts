@@ -13,6 +13,6 @@ export class CategoryMapper {
   public static toListCategoryResponse(
     categories: Category[],
   ): CategoryResponseDto[] {
-    return categories.map((item, index) => CategoryMapper.toResponseDto(item));
+    return categories.map((item) => CategoryMapper.toResponseDto(item));
   }
 }
