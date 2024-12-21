@@ -24,7 +24,7 @@ import { ApiTags } from '@nestjs/swagger';
 export class ForumController {
   constructor(private readonly forumService: ForumService) {}
 
-  @Post('post')
+  @Post('Post')
   @UseGuards(AuthGuard)
   createPost(
     @CurrentUser() userId: number,

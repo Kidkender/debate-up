@@ -11,7 +11,10 @@ export class PracticeController {
 
   @Post('debate')
   @UseGuards(AuthGuard)
-  async debateWithAI(@Body() req: DebateRequestDto) {
+  async debateWithAI(
+    @CurrentUser() userId: number,
+    @Body() req: DebateRequestDto,
+  ) {
     return this.practiceService.debateWithAI(req.content);
   }
 

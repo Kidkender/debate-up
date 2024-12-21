@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Course } from '@prisma/client';
 import { CourseLevel } from 'src/common/enumerations/courseLevel.enum';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -7,6 +7,8 @@ import { UpdateCourseDto } from './dtos/update-course.dto';
 
 @Injectable()
 export class CourseService {
+  private readonly logger = new Logger(CourseService.name);
+
   constructor(private readonly prismaService: PrismaService) {}
 
   async getCourses(level?: CourseLevel) {
@@ -19,17 +21,21 @@ export class CourseService {
   }
 
   async createCourse(data: CreateCourseDto) {
-    return this.prismaService.course.create({
+    const course = await this.prismaService.course.create({
       data,
     });
+
+    this.logger.log(`Course ${course.id} created`);
   }
 
   async updateCourse(id: number, data: UpdateCourseDto) {
     await this.getByCourseId(id);
-    return this.prismaService.course.update({
+    const courseUpdated = await this.prismaService.course.update({
       where: { id },
       data,
     });
+
+    this.logger.log(`Course ${courseUpdated.id} updated`);
   }
 
   async getByCourseId(id: number): Promise<Course> {

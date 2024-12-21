@@ -4,8 +4,9 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { Category } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CategoryMapper } from './category.mapper';
+import { CategoryResponseDto } from './dtos/category-response.dto';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
 
@@ -26,7 +27,7 @@ export class CategoryService {
     this.logger.log(`Category ${data} created`);
   }
 
-  async findById(id: number): Promise<Category> {
+  async findById(id: number): Promise<CategoryResponseDto> {
     const category = await this.prismaService.category.findFirst({
       where: { id },
     });
@@ -35,7 +36,7 @@ export class CategoryService {
       throw new NotFoundException(`Category ${id} not found`);
     }
 
-    return category;
+    return CategoryMapper.toResponseDto(category);
   }
 
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {
@@ -54,8 +55,9 @@ export class CategoryService {
     this.logger.log(`Updated category ${id} successfully`);
   }
 
-  async findAll(): Promise<Category[]> {
-    return await this.prismaService.category.findMany();
+  async findAll(): Promise<CategoryResponseDto[]> {
+    const categories = await this.prismaService.category.findMany();
+    return CategoryMapper.toListCategoryResponse(categories);
   }
 
   async remove(id: number) {

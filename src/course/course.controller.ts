@@ -18,7 +18,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Roles } from 'src/auth/decorators/role.decorator';
 
-@ApiTags('course')
+@ApiTags('Course')
 @Controller('course')
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}

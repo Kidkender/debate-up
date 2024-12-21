@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CourseLevel } from '@prisma/client';
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class CreateCourseDto {
   @IsString()
@@ -14,4 +21,8 @@ export class CreateCourseDto {
   @ApiProperty({ enum: CourseLevel, enumName: 'CourseLevel', required: true })
   @IsEnum(CourseLevel)
   level: CourseLevel;
+
+  @Min(1)
+  @IsNumber()
+  duration: number;
 }

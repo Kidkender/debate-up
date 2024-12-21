@@ -30,10 +30,17 @@ export class ForumService {
   async createPost(userId: number, data: CreatePostDto) {
     const { title, content } = data;
     const result = await this.isSensitiveContent(title);
+    const resultContent = await this.isSensitiveContent(content);
 
     if (result.main_result) {
       throw new BadRequestException(
         `Inappropriate content. Reason: ${result.reason[0].content_type}`,
+      );
+    }
+
+    if (resultContent.main_result) {
+      throw new BadRequestException(
+        `Inappropriate content. Reason: ${resultContent.reason[0].content_type}`,
       );
     }
 
