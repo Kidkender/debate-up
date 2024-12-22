@@ -7,6 +7,8 @@ import { DebateRequestDto } from './dtos/debate-request.dto';
 import { EvaluateRequestDto } from './dtos/evaluate-request.dto';
 import { PracticeService } from './practice.service';
 import { RolesGuard } from 'src/auth/guards/role.guard';
+import { plainToInstance } from 'class-transformer';
+import { ResultReponseDto } from './dtos/practice-response.dto';
 
 @Controller('practice')
 @UseGuards(AuthGuard)
@@ -33,11 +35,13 @@ export class PracticeController {
   @Roles(ROLE.ADMIN)
   @UseGuards(RolesGuard)
   async getResult() {
-    return this.practiceService.getResultDebate();
+    const results = this.practiceService.getResults();
+    return plainToInstance(ResultReponseDto, results);
   }
 
   @Get('/user')
   async getUserScore(@CurrentUser() userId: number) {
-    return this.practiceService.getResultByUser(userId);
+    const result = this.practiceService.getResultByUser(userId);
+    return plainToInstance(ResultReponseDto, result);
   }
 }
