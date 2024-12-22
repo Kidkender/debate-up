@@ -11,6 +11,9 @@ import { CreatePostDto } from './dtos/create-post.dto';
 import { UpdateCommentDto } from './dtos/update-comment.dto';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { IDetecToxic } from './forum.interface';
+import { ForumComment } from '@prisma/client';
+import { CommentResponseDto } from './dtos/comment-response.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class ForumService {
@@ -55,27 +58,58 @@ export class ForumService {
   }
 
   async getPosts(skip: number = 0, take: number = 10) {
-    return this.prismaService.forum.findMany({
+    const posts = await this.prismaService.forum.findMany({
       skip,
       take,
       orderBy: {
         createdAt: 'desc',
       },
       include: {
-        user: true,
-        comments: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+          },
+        },
       },
     });
+
+    const postsWithCommentsCount = await Promise.all(
+      posts.map(async (post) => {
+        const commentsCount = await this.prismaService.forumComment.count({
+          where: { forumId: post.id },
+        });
+        return {
+          ...post,
+          commentsCount,
+        };
+      }),
+    );
+
+    return postsWithCommentsCount;
   }
 
   async getPostById(postId: number) {
-    const post = this.prismaService.forum.findUnique({
+    const post = await this.prismaService.forum.findUnique({
       where: { id: postId },
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+          },
+        },
         comments: {
           include: {
-            user: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatarUrl: true,
+              },
+            },
           },
         },
       },
@@ -185,5 +219,26 @@ export class ForumService {
       );
     }
     return this.prismaService.forumComment.delete({ where: { id: commentId } });
+  }
+
+  async getCommentByPost(postId: number): Promise<CommentResponseDto[]> {
+    const post = await this.getPostById(postId);
+
+    const comments = await this.prismaService.forumComment.findMany({
+      where: { forumId: postId },
+      select: {
+        id: true,
+        comment: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+
+    return plainToInstance(CommentResponseDto, comments);
   }
 }
