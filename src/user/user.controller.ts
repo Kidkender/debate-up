@@ -36,6 +36,14 @@ export class UserController {
     return plainToInstance(UserResponseDto, users);
   }
 
+  @Get('violent')
+  @Roles(ROLE.ADMIN)
+  @ApiOperation({ summary: 'Get violent users (Admin only)' })
+  async getViolents() {
+    const violentUsers = await this.userService.getUserViolent();
+    return plainToInstance(UserResponseDto, violentUsers);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get user by ID' })
   async getUser(@Param('id', ParseIntPipe) id: number) {
@@ -57,14 +65,6 @@ export class UserController {
   async unlockUser(@Param('userId', ParseIntPipe) userId: number) {
     await this.userService.unlockUser(userId);
     return { message: `User with ID ${userId} has been unlocked.` };
-  }
-
-  @Get('/violent')
-  @Roles(ROLE.ADMIN)
-  @ApiOperation({ summary: 'Get violent users (Admin only)' })
-  async getViolents() {
-    const violentUsers = await this.userService.getUserViolent();
-    return plainToInstance(UserResponseDto, violentUsers);
   }
 
   @Patch(':id')

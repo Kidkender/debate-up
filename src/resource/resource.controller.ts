@@ -37,13 +37,13 @@ export class ResourceController {
     return this.resourceService.getResources(filterDto);
   }
 
-  @Get('/:id')
-  async getResource(@Param('id', ParseIntPipe) id: number) {
-    return await this.resourceService.getResourceById(id);
-  }
-
-  @Get('/category')
+  @Get('category')
   async findByCategory(@Query('categoryId') categoryId: number) {
     return this.resourceService.getResourceByCategory(categoryId);
+  }
+
+  @Get(':id')
+  async getResource(@Param('id', ParseIntPipe) id: number) {
+    return await this.resourceService.getResourceById(id);
   }
 }
