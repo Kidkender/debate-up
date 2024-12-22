@@ -1,5 +1,6 @@
 import {
   DeleteObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -48,6 +49,26 @@ export class S3Service {
       this.logger.log(`Deleted file with key ${key} from S3`);
     } catch (error) {
       this.logger.error(`Error when deleting file from cloud: ${error}`);
+    }
+  }
+
+  async findFileInCloud(key: string): Promise<boolean> {
+    try {
+      const params = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: key,
+      };
+      const command = new HeadObjectCommand(params);
+      await this.s3.send(command);
+      this.logger.log(`File with key ${key} found in S3`);
+      return true;
+    } catch (error) {
+      if (error.name === 'NotFound') {
+        this.logger.warn(`File with key ${key} does not exist in S3`);
+        return false;
+      }
+      this.logger.error(`Error when finding file in S3: ${error}`);
+      throw new BadRequestException('Error when finding file: ' + error);
     }
   }
 }

@@ -17,13 +17,13 @@ import { CreateResourceDto } from './dtos/createResource.dto';
 import { FilterResourceDto } from './dtos/filter-resource.dto';
 import { ApiTags } from '@nestjs/swagger';
 
-@ApiTags('resource')
+@ApiTags('Resource')
+@UseGuards(AuthGuard)
 @Controller('resource')
 export class ResourceController {
   constructor(private resourceService: ResourceService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async createResource(
     @UploadedFile() file: Express.Multer.File,

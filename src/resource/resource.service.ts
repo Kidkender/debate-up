@@ -5,6 +5,7 @@ import { S3Service } from 'src/third-party/s3.service';
 import { Resource } from '@prisma/client';
 import { FilterResourceDto } from './dtos/filter-resource.dto';
 import { CategoryService } from 'src/category/category.service';
+import { extractKeyFromUrl } from 'src/utils/url';
 
 @Injectable()
 export class ResourceService {
@@ -81,7 +82,7 @@ export class ResourceService {
     const resource = await this.getResourceById(id);
 
     if (resource.url) {
-      const oldKey = this.extractKeyFromUrl(resource.url);
+      const oldKey = extractKeyFromUrl(resource.url);
       await this.s3Service.deleteFromCloud(oldKey);
     }
 
@@ -94,14 +95,6 @@ export class ResourceService {
 
     this.logger.log(`Updated resource ${id} with new file`);
     return updatedResource;
-  }
-
-  private extractKeyFromUrl(url: string): string {
-    const key = url.split('.amazonaws.com/')[1];
-    if (!key) {
-      throw new BadRequestException('Invalid S3 URL');
-    }
-    return key;
   }
 
   async getResourceByCategory(categoryId: number): Promise<Resource[]> {

@@ -16,17 +16,18 @@ import { UpdateLessonDto } from './dtos/update-lesson.dto';
 import { LessonService } from './lesson.service';
 
 @Controller('lesson')
+@UseGuards(AuthGuard)
 export class LessonController {
   constructor(private readonly lessonService: LessonService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
   @Roles('admin')
   async createLesson(@Body() req: CreateLessonDto) {
     return this.lessonService.createLesson(req);
   }
 
   @Patch(':id')
+  @Roles('admin')
   async updateLesson(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateLessonDto: UpdateLessonDto,
@@ -45,6 +46,7 @@ export class LessonController {
   }
 
   @Delete(':id')
+  @Roles('admin')
   async deleteLesson(@Param('id', ParseIntPipe) id: number) {
     return await this.lessonService.deleteLesson(id);
   }
