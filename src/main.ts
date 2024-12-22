@@ -18,9 +18,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, documentFactory);
 
   app.useGlobalInterceptors(
-    new ClassSerializerInterceptor(app.get(Reflector), {
-      strategy: 'excludeAll',
-    }),
+    new ClassSerializerInterceptor(app.get(Reflector), {}),
   );
 
   await app.listen(3000);

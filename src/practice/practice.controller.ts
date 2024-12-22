@@ -1,10 +1,12 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { PracticeService } from './practice.service';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { DebateRequestDto } from './dtos/debate-request.dto';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { EvaluateRequestDto } from './dtos/evaluate-request.dto';
 import { Roles } from 'src/auth/decorators/role.decorator';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { ROLE } from 'src/common/enumerations/role.enum';
+import { DebateRequestDto } from './dtos/debate-request.dto';
+import { EvaluateRequestDto } from './dtos/evaluate-request.dto';
+import { PracticeService } from './practice.service';
+import { RolesGuard } from 'src/auth/guards/role.guard';
 
 @Controller('practice')
 @UseGuards(AuthGuard)
@@ -28,7 +30,8 @@ export class PracticeController {
   }
 
   @Get()
-  @Roles('admin')
+  @Roles(ROLE.ADMIN)
+  @UseGuards(RolesGuard)
   async getResult() {
     return this.practiceService.getResultDebate();
   }
