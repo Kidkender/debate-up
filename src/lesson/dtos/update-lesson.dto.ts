@@ -11,7 +11,7 @@ export class UpdateLessonDto {
 
   @IsOptional()
   @IsString()
-  contentUrl?: string;
+  content_url?: string;
 
   @IsOptional()
   @IsNumber()
