@@ -127,7 +127,7 @@ export class ForumService {
 
     await this.getPostById(forumId);
 
-    const newComment = this.prismaService.forumComment.create({
+    const newComment = await this.prismaService.forumComment.create({
       data: {
         userId,
         forumId,
@@ -135,6 +135,7 @@ export class ForumService {
         parentId,
       },
     });
+
     this.logger.log(`Comment ${newComment} is added`);
   }
 
