@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -16,14 +17,18 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateResourceDto } from './dtos/createResource.dto';
 import { FilterResourceDto } from './dtos/filter-resource.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { RolesGuard } from 'src/auth/guards/role.guard';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { ROLE } from 'src/common/enumerations/role.enum';
 
 @ApiTags('Resource')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RolesGuard)
 @Controller('resource')
 export class ResourceController {
   constructor(private resourceService: ResourceService) {}
 
   @Post()
+  @Roles(ROLE.ADMIN)
   @UseInterceptors(FileInterceptor('file'))
   async createResource(
     @UploadedFile() file: Express.Multer.File,
@@ -45,5 +50,11 @@ export class ResourceController {
   @Get(':id')
   async getResource(@Param('id', ParseIntPipe) id: number) {
     return await this.resourceService.getResourceById(id);
+  }
+
+  @Delete(':id')
+  @Roles(ROLE.ADMIN)
+  async deleteResource(@Param('id', ParseIntPipe) id: number) {
+    return await this.resourceService.deleteResource(id);
   }
 }

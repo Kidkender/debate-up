@@ -29,7 +29,7 @@ export class CategoryService {
 
   async findById(id: number): Promise<CategoryResponseDto> {
     const category = await this.prismaService.category.findFirst({
-      where: { id },
+      where: { id: Number(id) },
     });
 
     if (!category) {

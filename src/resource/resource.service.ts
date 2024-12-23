@@ -20,20 +20,14 @@ export class ResourceService {
     file: Express.Multer.File,
     createResourceDto: CreateResourceDto,
   ) {
-    const categoryId = createResourceDto.categoryId;
+    const categoryId = parseInt(createResourceDto.categoryId.toString(), 10);
 
-    await this.categoryService.findById(Number(categoryId));
+    await this.categoryService.findById(categoryId);
 
     const fileUrl = await this.s3Service.uploadToCloud(file);
 
     const newResource = await this.prismaService.resource.create({
-      data: {
-        title: createResourceDto.title,
-        description: createResourceDto.description,
-        categoryId: Number(categoryId),
-        type: createResourceDto.type,
-        url: fileUrl,
-      },
+      data: { ...createResourceDto, categoryId, url: fileUrl },
     });
 
     this.logger.log(`Create new resource ${newResource.id} successfully`);
@@ -99,5 +93,12 @@ export class ResourceService {
 
   async getResourceByCategory(categoryId: number): Promise<Resource[]> {
     return this.prismaService.resource.findMany({ where: { categoryId } });
+  }
+
+  async deleteResource(resourceId: number): Promise<void> {
+    await this.getResourceById(resourceId);
+
+    await this.prismaService.resource.delete({ where: { id: resourceId } });
+    this.logger.log(`Deleting resource ${resourceId}`);
   }
 }
