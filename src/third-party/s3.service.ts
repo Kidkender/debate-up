@@ -5,6 +5,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { BadRequestException, Logger } from '@nestjs/common';
+import { slugify } from 'transliteration';
 import { v4 as uuid } from 'uuid';
 
 export class S3Service {
@@ -20,7 +21,23 @@ export class S3Service {
 
   async uploadToCloud(file: Express.Multer.File): Promise<string> {
     try {
-      const key = `${uuid()}-${file.originalname}`;
+      const fileExtension =
+        file.originalname.substring(file.originalname.lastIndexOf('.')) || '';
+
+      const sanitizedFileName = slugify(
+        file.originalname.slice(0, file.originalname.lastIndexOf('.')),
+        { separator: '-', lowercase: true },
+      );
+      const maxFileNameLength = 50;
+
+      const truncatedFileName = sanitizedFileName.slice(
+        0,
+        maxFileNameLength - fileExtension.length,
+      );
+
+      const key = `${uuid()}-${truncatedFileName}${fileExtension}`;
+
+      // const key = `${uuid()}-${file.originalname}`;
       const params = {
         Bucket: process.env.AWS_BUCKET_NAME,
         Key: key,
