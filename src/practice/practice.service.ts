@@ -45,7 +45,10 @@ export class PracticeService {
     });
 
     this.logger.log(`User ${userId} has submit debate successfully`);
-    return practiced.feedback_score;
+    return {
+      feedback_score: practiced.feedback_score,
+      aiResponse: practiced.aiResponse,
+    };
   }
   async getResults(): Promise<DebateSession[]> {
     return await this.prismaService.debateSession.findMany();
