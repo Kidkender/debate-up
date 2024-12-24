@@ -1,26 +1,47 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { PracticeService } from './practice.service';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { DebateRequestDto } from './dtos/debate-request.dto';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { ROLE } from 'src/common/enumerations/role.enum';
+import { DebateRequestDto } from './dtos/debate-request.dto';
 import { EvaluateRequestDto } from './dtos/evaluate-request.dto';
+import { PracticeService } from './practice.service';
+import { RolesGuard } from 'src/auth/guards/role.guard';
+import { plainToInstance } from 'class-transformer';
+import { ResultReponseDto } from './dtos/practice-response.dto';
 
 @Controller('practice')
+@UseGuards(AuthGuard)
 export class PracticeController {
   constructor(private practiceService: PracticeService) {}
 
   @Post('debate')
-  @UseGuards(AuthGuard)
-  async debateWithAI(@Body() req: DebateRequestDto) {
+  async debateWithAI(
+    @CurrentUser() userId: number,
+    @Body() req: DebateRequestDto,
+  ) {
     return this.practiceService.debateWithAI(req.content);
   }
 
   @Post('evaluate')
-  @UseGuards(AuthGuard)
   async evaluate(
     @CurrentUser() userId: number,
     @Body() req: EvaluateRequestDto,
   ) {
     return this.practiceService.evaluteDebate(userId, req.essay);
+  }
+
+  @Get()
+  @Roles(ROLE.ADMIN)
+  @UseGuards(RolesGuard)
+  async getResult() {
+    const results = this.practiceService.getResults();
+    return plainToInstance(ResultReponseDto, results);
+  }
+
+  @Get('/user')
+  async getUserScore(@CurrentUser() userId: number) {
+    const result = this.practiceService.getResultByUser(userId);
+    return plainToInstance(ResultReponseDto, result);
   }
 }

@@ -23,4 +23,10 @@ export class ReportController {
   async getAllReports() {
     return this.reportService.getReports();
   }
+
+  @Get('my-report')
+  @UseGuards(AuthGuard)
+  async getUserReports(@CurrentUser() userId: number) {
+    return this.reportService.getReportByUserId(userId);
+  }
 }

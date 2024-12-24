@@ -18,14 +18,15 @@ import { UpdateCommentDto } from './dtos/update-comment.dto';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { ForumService } from './forum.service';
 import { ApiTags } from '@nestjs/swagger';
+import { Public } from 'src/auth/decorators/public.decorator';
 
-@ApiTags('forum')
+@ApiTags('Forum')
 @Controller('forum')
+@UseGuards(AuthGuard)
 export class ForumController {
   constructor(private readonly forumService: ForumService) {}
 
-  @Post('post')
-  @UseGuards(AuthGuard)
+  @Post('Post')
   createPost(
     @CurrentUser() userId: number,
     @Body() createPostDto: CreatePostDto,
@@ -34,6 +35,7 @@ export class ForumController {
   }
 
   @Get('post')
+  @Public()
   getPosts(
     @Query('skip', ParseIntPipe) skip = 0,
     @Query('take', ParseIntPipe) take = 10,
@@ -42,12 +44,12 @@ export class ForumController {
   }
 
   @Get('post/:postId')
+  @Public()
   getPostById(@Param('postId', ParseIntPipe) postId: number) {
     return this.forumService.getPostById(postId);
   }
 
   @Post('comment')
-  @UseGuards(AuthGuard)
   addComment(
     @CurrentUser() userId: number,
     @Body() createCommentDto: CreateCommentDto,
@@ -56,7 +58,6 @@ export class ForumController {
   }
 
   @Put('post')
-  @UseGuards(AuthGuard)
   updatePost(
     @CurrentUser() userId: number,
     @Body() updatePostDto: UpdatePostDto,
@@ -65,7 +66,6 @@ export class ForumController {
   }
 
   @Delete('post/:postId')
-  @UseGuards(AuthGuard)
   deletePost(
     @CurrentUser() userId: number,
     @Param('postId', ParseIntPipe) postId: number,
@@ -74,7 +74,6 @@ export class ForumController {
   }
 
   @Put('comment')
-  @UseGuards(AuthGuard)
   updateComment(
     @CurrentUser() userId: number,
     @Body() updateCommentDto: UpdateCommentDto,
@@ -83,11 +82,16 @@ export class ForumController {
   }
 
   @Delete('comment/:commentId')
-  @UseGuards(AuthGuard)
   deleteComment(
     @CurrentUser() userId: number,
     @Param('commentId', ParseIntPipe) commentId: number,
   ) {
     return this.forumService.deleteComment(commentId, userId);
+  }
+
+  @Get('comment/:id')
+  @Public()
+  async getCommentByPost(@Param('id', ParseIntPipe) id: number) {
+    return this.forumService.getCommentByPost(id);
   }
 }

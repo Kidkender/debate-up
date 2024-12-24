@@ -5,20 +5,20 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
-  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { CourseService } from './course.service';
+import { ApiTags } from '@nestjs/swagger';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { CourseLevel } from 'src/common/enumerations/courseLevel.enum';
+import { CourseService } from './course.service';
 import { CreateCourseDto } from './dtos/create-course.dto';
 import { UpdateCourseDto } from './dtos/update-course.dto';
-import { ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { Roles } from 'src/auth/decorators/role.decorator';
 
-@ApiTags('course')
+@ApiTags('Course')
 @Controller('course')
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
@@ -32,6 +32,11 @@ export class CourseController {
     return this.courseService.getCourses(courseLevel);
   }
 
+  @Get(':id')
+  async getCourseById(@Param('id', ParseIntPipe) id: number) {
+    return this.courseService.getByCourseId(id);
+  }
+
   @Post()
   @UseGuards(AuthGuard)
   @Roles('admin')
@@ -39,7 +44,14 @@ export class CourseController {
     return this.courseService.createCourse(createCourseDto);
   }
 
-  @Put(':id')
+  @Post('/muti')
+  @UseGuards(AuthGuard)
+  @Roles('admin')
+  async createCourses(@Body() createCourseDto: CreateCourseDto[]) {
+    return this.courseService.createCourses(createCourseDto);
+  }
+
+  @Patch(':id')
   @UseGuards(AuthGuard)
   @Roles('admin')
   async updateCourse(

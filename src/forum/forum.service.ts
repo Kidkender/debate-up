@@ -1,12 +1,15 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { HttpService } from 'src/common/http.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCommentDto } from './dtos/add-comment.dto';
+import { CommentResponseDto } from './dtos/comment-response.dto';
 import { CreatePostDto } from './dtos/create-post.dto';
 import { UpdateCommentDto } from './dtos/update-comment.dto';
 import { UpdatePostDto } from './dtos/update-post.dto';
@@ -27,15 +30,21 @@ export class ForumService {
     return this.httpService.post('/detect_toxic', { essay });
   }
 
-  async createPost(userId: number, data: CreatePostDto) {
-    const { title, content } = data;
-    const result = await this.isSensitiveContent(title);
+  async validateSensitiveContent(content: string, field: string) {
+    const result = await this.isSensitiveContent(content);
 
     if (result.main_result) {
       throw new BadRequestException(
-        `Inappropriate content. Reason: ${result.reason[0].content_type}`,
+        `${field} contains toxic content: ${result.reason[0].content_type}`,
       );
     }
+  }
+
+  async createPost(userId: number, data: CreatePostDto) {
+    const { title, content } = data;
+
+    await this.validateSensitiveContent(title, 'Title');
+    await this.validateSensitiveContent(content, 'Content');
 
     const post = await this.prismaService.forum.create({
       data: {
@@ -48,27 +57,58 @@ export class ForumService {
   }
 
   async getPosts(skip: number = 0, take: number = 10) {
-    return this.prismaService.forum.findMany({
+    const posts = await this.prismaService.forum.findMany({
       skip,
       take,
       orderBy: {
         createdAt: 'desc',
       },
       include: {
-        user: true,
-        comments: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+          },
+        },
       },
     });
+
+    const postsWithCommentsCount = await Promise.all(
+      posts.map(async (post) => {
+        const commentsCount = await this.prismaService.forumComment.count({
+          where: { forumId: post.id },
+        });
+        return {
+          ...post,
+          commentsCount,
+        };
+      }),
+    );
+
+    return postsWithCommentsCount;
   }
 
   async getPostById(postId: number) {
-    const post = this.prismaService.forum.findUnique({
+    const post = await this.prismaService.forum.findUnique({
       where: { id: postId },
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+          },
+        },
         comments: {
           include: {
-            user: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatarUrl: true,
+              },
+            },
           },
         },
       },
@@ -83,16 +123,11 @@ export class ForumService {
   async addComment(userId: number, data: CreateCommentDto) {
     const { comment, parentId, forumId } = data;
 
-    const result = await this.isSensitiveContent(comment);
-    if (result.main_result) {
-      throw new BadRequestException(
-        `Inappropriate content. Reason: ${result.reason[0].keywords}`,
-      );
-    }
+    await this.validateSensitiveContent(comment, 'Comment');
 
     await this.getPostById(forumId);
 
-    const newComment = this.prismaService.forumComment.create({
+    const newComment = await this.prismaService.forumComment.create({
       data: {
         userId,
         forumId,
@@ -100,24 +135,22 @@ export class ForumService {
         parentId,
       },
     });
+
     this.logger.log(`Comment ${newComment} is added`);
   }
 
   async updatePost(userId: number, data: UpdatePostDto) {
     const { postId, title, content } = data;
 
-    const result = await this.isSensitiveContent(title);
-    if (result.main_result) {
-      throw new BadRequestException(
-        `Inappropriate content. Reason: ${result.reason[0].keywords}`,
-      );
-    }
+    await this.validateSensitiveContent(title, 'Title');
+    await this.validateSensitiveContent(content, 'Content');
 
     const post = await this.prismaService.forum.findUnique({
       where: { id: postId },
     });
+
     if (!post || post.userId !== userId) {
-      throw new Error('You do not have permission to access');
+      throw new ForbiddenException('You do not have permission to access');
     }
     await this.prismaService.forum.update({
       where: { id: postId },
@@ -133,12 +166,7 @@ export class ForumService {
   async updateComment(userId: number, data: UpdateCommentDto) {
     const { commentId, newComment } = data;
 
-    const result = await this.isSensitiveContent(newComment);
-    if (result.main_result) {
-      throw new BadRequestException(
-        `Inappropriate content. Reason: ${result.reason[0].keywords}`,
-      );
-    }
+    await this.validateSensitiveContent(newComment, 'Comment');
 
     const comment = await this.prismaService.forumComment.findUnique({
       where: { id: commentId },
@@ -178,5 +206,26 @@ export class ForumService {
       );
     }
     return this.prismaService.forumComment.delete({ where: { id: commentId } });
+  }
+
+  async getCommentByPost(postId: number): Promise<CommentResponseDto[]> {
+    const post = await this.getPostById(postId);
+
+    const comments = await this.prismaService.forumComment.findMany({
+      where: { forumId: postId },
+      select: {
+        id: true,
+        comment: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+
+    return plainToInstance(CommentResponseDto, comments);
   }
 }

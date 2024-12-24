@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from 'src/common/http.service';
 import { EvaluateResponse } from './practice.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { DebateSession } from '@prisma/client';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class PracticeService {
@@ -10,6 +12,7 @@ export class PracticeService {
   constructor(
     private prismaService: PrismaService,
     private httpService: HttpService,
+    private readonly userService: UserService,
   ) {
     this.httpService = new HttpService(process.env.AI_API_URL);
   }
@@ -43,5 +46,17 @@ export class PracticeService {
 
     this.logger.log(`User ${userId} has submit debate successfully`);
     return practiced.feedback_score;
+  }
+  async getResults(): Promise<DebateSession[]> {
+    return await this.prismaService.debateSession.findMany();
+  }
+
+  async getResultByUser(userId: number): Promise<DebateSession[]> {
+    const user = await this.userService.getUserById(userId);
+
+    const results = await this.prismaService.debateSession.findMany({
+      where: { userId: user.id },
+    });
+    return results;
   }
 }

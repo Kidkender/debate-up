@@ -5,6 +5,7 @@ import { S3Service } from 'src/third-party/s3.service';
 import { Resource } from '@prisma/client';
 import { FilterResourceDto } from './dtos/filter-resource.dto';
 import { CategoryService } from 'src/category/category.service';
+import { extractKeyFromUrl } from 'src/utils/url';
 
 @Injectable()
 export class ResourceService {
@@ -19,12 +20,14 @@ export class ResourceService {
     file: Express.Multer.File,
     createResourceDto: CreateResourceDto,
   ) {
-    await this.categoryService.findById(createResourceDto.categoryId);
+    const categoryId = parseInt(createResourceDto.categoryId.toString(), 10);
+
+    await this.categoryService.findById(categoryId);
 
     const fileUrl = await this.s3Service.uploadToCloud(file);
 
     const newResource = await this.prismaService.resource.create({
-      data: { ...createResourceDto, url: fileUrl },
+      data: { ...createResourceDto, categoryId, url: fileUrl },
     });
 
     this.logger.log(`Create new resource ${newResource.id} successfully`);
@@ -73,7 +76,7 @@ export class ResourceService {
     const resource = await this.getResourceById(id);
 
     if (resource.url) {
-      const oldKey = this.extractKeyFromUrl(resource.url);
+      const oldKey = extractKeyFromUrl(resource.url);
       await this.s3Service.deleteFromCloud(oldKey);
     }
 
@@ -88,15 +91,14 @@ export class ResourceService {
     return updatedResource;
   }
 
-  private extractKeyFromUrl(url: string): string {
-    const key = url.split('.amazonaws.com/')[1];
-    if (!key) {
-      throw new BadRequestException('Invalid S3 URL');
-    }
-    return key;
-  }
-
   async getResourceByCategory(categoryId: number): Promise<Resource[]> {
     return this.prismaService.resource.findMany({ where: { categoryId } });
+  }
+
+  async deleteResource(resourceId: number): Promise<void> {
+    await this.getResourceById(resourceId);
+
+    await this.prismaService.resource.delete({ where: { id: resourceId } });
+    this.logger.log(`Deleting resource ${resourceId}`);
   }
 }

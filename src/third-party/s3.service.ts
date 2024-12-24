@@ -1,9 +1,11 @@
 import {
   DeleteObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
 import { BadRequestException, Logger } from '@nestjs/common';
+import { slugify } from 'transliteration';
 import { v4 as uuid } from 'uuid';
 
 export class S3Service {
@@ -19,7 +21,23 @@ export class S3Service {
 
   async uploadToCloud(file: Express.Multer.File): Promise<string> {
     try {
-      const key = `${uuid()}-${file.originalname}`;
+      const fileExtension =
+        file.originalname.substring(file.originalname.lastIndexOf('.')) || '';
+
+      const sanitizedFileName = slugify(
+        file.originalname.slice(0, file.originalname.lastIndexOf('.')),
+        { separator: '-', lowercase: true },
+      );
+      const maxFileNameLength = 50;
+
+      const truncatedFileName = sanitizedFileName.slice(
+        0,
+        maxFileNameLength - fileExtension.length,
+      );
+
+      const key = `${uuid()}-${truncatedFileName}${fileExtension}`;
+
+      // const key = `${uuid()}-${file.originalname}`;
       const params = {
         Bucket: process.env.AWS_BUCKET_NAME,
         Key: key,
@@ -48,6 +66,26 @@ export class S3Service {
       this.logger.log(`Deleted file with key ${key} from S3`);
     } catch (error) {
       this.logger.error(`Error when deleting file from cloud: ${error}`);
+    }
+  }
+
+  async findFileInCloud(key: string): Promise<boolean> {
+    try {
+      const params = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: key,
+      };
+      const command = new HeadObjectCommand(params);
+      await this.s3.send(command);
+      this.logger.log(`File with key ${key} found in S3`);
+      return true;
+    } catch (error) {
+      if (error.name === 'NotFound') {
+        this.logger.warn(`File with key ${key} does not exist in S3`);
+        return false;
+      }
+      this.logger.error(`Error when finding file in S3: ${error}`);
+      throw new BadRequestException('Error when finding file: ' + error);
     }
   }
 }

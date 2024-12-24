@@ -32,7 +32,7 @@ model User {
   otpExpiry        DateTime?
   lastOtpSent      DateTime?
 
-  progress      UserCourseProgress[]
+  progress      UserCourse[]
   debates       DebateSession[]
   forumPosts    Forum[]
   comments      ForumComment[]
@@ -72,29 +72,34 @@ model Course {
   title       String
   description String?
   level       CourseLevel
+  duration    Int
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
   quiz      Quiz[]
-  contents  CourseContent[]
-  progress  UserCourseProgress[]
+  lessons   Lesson[]
+  progress  UserCourse[]
   feedbacks Feedback[]
 
   prerequisites    PrerequisiteCourses[] @relation("CoursePrereq")
   dependentCourses PrerequisiteCourses[] @relation("CoursePrereqInverse")
 }
 
-model CourseContent {
-  id          Int      @id @default(autoincrement())
+model Lesson {
+  id          Int     @id @default(autoincrement())
   courseId    Int
+  title       String
+  content     String? @db.Text
   content_url String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  order       Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   course Course @relation(fields: [courseId], references: [id])
 }
 
-model UserCourseProgress {
+model UserCourse {
   id           Int       @id @default(autoincrement())
   userId       Int
   courseId     Int
@@ -110,9 +115,9 @@ model UserCourseProgress {
 model DebateSession {
   id             Int      @id @default(autoincrement())
   userId         Int
-  topic          String @db.VarChar(255)
-  aiResponse     String @db.Text
-  userResponse   String @db.Text
+  topic          String   @db.VarChar(255)
+  aiResponse     String   @db.Text
+  userResponse   String   @db.Text
   feedback_score Float?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
