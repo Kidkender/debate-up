@@ -1,3 +1,4 @@
+import { ContentType } from '@prisma/client';
 import { IsInt, IsString, IsIn } from 'class-validator';
 
 export class CreateReportDto {
@@ -5,8 +6,8 @@ export class CreateReportDto {
   contentId: number;
 
   @IsString()
-  @IsIn(['POST', 'COMMENT'])
-  contentType: 'POST' | 'COMMENT';
+  @IsIn(['FORUM', 'COMMENT'])
+  contentType: ContentType;
 
   @IsString()
   reason: string;

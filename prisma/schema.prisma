@@ -221,7 +221,7 @@ model Report {
   id          Int          @id @default(autoincrement())
   userId      Int
   contentId   Int
-  contentType String
+  contentType ContentType
   reason      String
   status      ReportStatus @default(PENDING)
   createdAt   DateTime     @default(now())
@@ -272,4 +272,9 @@ enum UserStatus {
   ACTIVE
   SUSPENDED
   BANNED
+}
+
+enum ContentType {
+  FORUM
+  COMMENT  
 }

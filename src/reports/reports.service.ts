@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateReportDto } from './dtos/create-report.dto';
 import { UserService } from 'src/user/user.service';
-import { Report } from '@prisma/client';
+import { Report, ReportStatus } from '@prisma/client';
+import { ResolveReportDto } from './dtos/update-report';
 
 @Injectable()
 export class ReportService {
@@ -17,15 +18,40 @@ export class ReportService {
       data: { ...data, userId: userId },
     });
 
-    this.logger.log(`User ${userId} created report ${(await report).id}}`);
+    this.logger.log(`User ${userId} created report ${(await report).id}`);
   }
 
   async getReports() {
-    return this.prisma.report.findMany({
-      include: {
-        User: true,
-      },
+    const reports = await this.prisma.report.findMany({});
+
+    const enrichedReport = await Promise.all(
+      reports.map(async (report) => {
+        if (report.contentType === 'FORUM') {
+          const post = await this.prisma.forum.findUnique({
+            where: { id: report.contentId },
+            select: { userId: true },
+          });
+          return { ...report, postOwner: post?.userId };
+        } else if (report.contentType === 'COMMENT') {
+          const comment = await this.prisma.forumComment.findUnique({
+            where: { id: report.contentId },
+            select: { userId: true },
+          });
+          return { ...report, commentOwner: comment?.userId };
+        }
+      }),
+    );
+    return enrichedReport;
+  }
+
+  async getReportById(reportId: number): Promise<Report> {
+    const report = await this.prisma.report.findFirst({
+      where: { id: reportId },
     });
+    if (!report) {
+      throw new BadRequestException(`Report ${reportId} not found`);
+    }
+    return report;
   }
 
   async getReportByUserId(userId: number): Promise<Report[]> {
@@ -35,5 +61,16 @@ export class ReportService {
       where: { userId: user.id },
     });
     return reports;
+  }
+
+  async resolveReport(data: ResolveReportDto) {
+    const report = await this.getReportById(data.reportId);
+
+    await this.prisma.report.update({
+      where: { id: report.id },
+      data: { status: data.status },
+    });
+
+    this.logger.log(`Updated status report ${data.reportId} `);
   }
 }
