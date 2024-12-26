@@ -1,17 +1,21 @@
-import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
-import { CreateReportDto } from './dtos/create-report.dto';
-import { ReportService } from './reports.service';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { RolesGuard } from 'src/auth/guards/role.guard';
+import { ROLE } from 'src/common/enumerations/role.enum';
+import { CreateReportDto } from './dtos/create-report.dto';
+import { ResolveReportDto } from './dtos/update-report';
+import { ReportService } from './reports.service';
 
-@ApiTags('reports')
+@ApiTags('Reports')
+@UseGuards(AuthGuard)
 @Controller('reports')
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
   async createReport(
     @CurrentUser() userId: number,
     @Body() createReportDto: CreateReportDto,
@@ -20,13 +24,21 @@ export class ReportController {
   }
 
   @Get()
+  @UseGuards(RolesGuard)
+  @Roles(ROLE.ADMIN)
   async getAllReports() {
     return this.reportService.getReports();
   }
 
   @Get('my-report')
-  @UseGuards(AuthGuard)
   async getUserReports(@CurrentUser() userId: number) {
     return this.reportService.getReportByUserId(userId);
+  }
+
+  @Patch('resolve')
+  @Roles(ROLE.ADMIN)
+  @UseGuards(RolesGuard)
+  async resolveReport(@Body() resolveReportDto: ResolveReportDto) {
+    return this.reportService.resolveReport(resolveReportDto);
   }
 }
