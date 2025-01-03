@@ -224,6 +224,8 @@ model Report {
   contentType ContentType
   reason      String
   status      ReportStatus @default(PENDING)
+  decisionNote String?
+
   createdAt   DateTime     @default(now())
 
   User User @relation(fields: [userId], references: [id])
