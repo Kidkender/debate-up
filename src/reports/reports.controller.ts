@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/role.decorator';
@@ -8,6 +17,7 @@ import { ROLE } from 'src/common/enumerations/role.enum';
 import { CreateReportDto } from './dtos/create-report.dto';
 import { ResolveReportDto } from './dtos/update-report';
 import { ReportService } from './reports.service';
+import { DeleteContentDto } from './dtos/delete-content.dto';
 
 @ApiTags('Reports')
 @UseGuards(AuthGuard)
@@ -40,5 +50,12 @@ export class ReportController {
   @UseGuards(RolesGuard)
   async resolveReport(@Body() resolveReportDto: ResolveReportDto) {
     return this.reportService.resolveReport(resolveReportDto);
+  }
+
+  @Post('delete-content')
+  @Roles(ROLE.ADMIN)
+  @UseGuards(RolesGuard)
+  deleteReportedContent(@Body() data: DeleteContentDto) {
+    return this.reportService.deleteReportedContent(data);
   }
 }

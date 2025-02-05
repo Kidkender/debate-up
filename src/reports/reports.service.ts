@@ -1,9 +1,15 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateReportDto } from './dtos/create-report.dto';
 import { UserService } from 'src/user/user.service';
 import { Report, ReportStatus } from '@prisma/client';
 import { ResolveReportDto } from './dtos/update-report';
+import { DeleteContentDto } from './dtos/delete-content.dto';
 
 @Injectable()
 export class ReportService {
@@ -22,7 +28,9 @@ export class ReportService {
   }
 
   async getReports() {
-    const reports = await this.prisma.report.findMany({});
+    const reports = await this.prisma.report.findMany({
+      where: { status: ReportStatus.PENDING },
+    });
 
     const enrichedReport = await Promise.all(
       reports.map(async (report) => {
@@ -68,9 +76,23 @@ export class ReportService {
 
     await this.prisma.report.update({
       where: { id: report.id },
-      data: { status: data.status },
+      data: {
+        status: data.status,
+      },
     });
 
     this.logger.log(`Updated status report ${data.reportId} `);
+  }
+
+  async deleteReportedContent(data: DeleteContentDto) {
+    const { contentType, contentId } = data;
+
+    if (contentType === 'FORUM') {
+      await this.prisma.forum.delete({ where: { id: contentId } });
+    } else if (contentType === 'COMMENT') {
+      await this.prisma.forumComment.delete({ where: { id: contentId } });
+    } else {
+      throw new NotFoundException('Invalid content type');
+    }
   }
 }

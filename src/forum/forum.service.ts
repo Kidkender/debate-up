@@ -14,6 +14,8 @@ import { CreatePostDto } from './dtos/create-post.dto';
 import { UpdateCommentDto } from './dtos/update-comment.dto';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { IDetecToxic } from './forum.interface';
+import { UserService } from 'src/user/user.service';
+import { ROLE } from 'src/common/enumerations/role.enum';
 
 @Injectable()
 export class ForumService {
@@ -22,6 +24,7 @@ export class ForumService {
   constructor(
     private prismaService: PrismaService,
     private httpService: HttpService,
+    private userService: UserService,
   ) {
     this.httpService = new HttpService(process.env.AI_API_URL);
   }
@@ -188,8 +191,18 @@ export class ForumService {
     const post = await this.prismaService.forum.findUnique({
       where: { id: postId },
     });
-    if (!post || post.userId !== userId) {
-      throw new Error(
+
+    if (!post) {
+      throw new BadRequestException(`Post with ID ${postId} does not exist.`);
+    }
+
+    const user = await this.userService.getUserById(userId);
+
+    const isOwner = post.userId === userId;
+    const isAdmin = user.role === ROLE.ADMIN;
+
+    if (!isOwner && !isAdmin) {
+      throw new BadRequestException(
         `User ${userId} do not have permission to delete post ${post.id} `,
       );
     }
@@ -200,8 +213,18 @@ export class ForumService {
     const comment = await this.prismaService.forumComment.findUnique({
       where: { id: commentId },
     });
-    if (!comment || comment.userId !== userId) {
-      throw new Error(
+
+    if (!comment) {
+      throw new BadRequestException(`Comment with ID ${commentId} not found`);
+    }
+
+    const user = await this.userService.getUserById(userId);
+
+    const isOwner = comment.userId === userId;
+    const isAdmin = user.role === ROLE.ADMIN;
+
+    if (!isAdmin && !isOwner) {
+      throw new BadRequestException(
         `User ${userId} do not have permission to delete comment ${comment.id} `,
       );
     }
